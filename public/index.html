@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Notion Web</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+  <div class="max-w-3xl mx-auto p-6">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">📚 EPLS - STRUCTURED ENGLISH</h1>
+
+      <!-- Dark Mode Button -->
+      <button onclick="toggleDark()" class="px-3 py-1 bg-black text-white rounded">
+        🌙
+      </button>
+    </div>
+
+    <!-- SEARCH -->
+    <input id="search"
+      placeholder="Cari materi..."
+      class="w-full p-2 mb-4 border rounded"
+      oninput="filterContent()"
+    />
+
+    <!-- CONTENT -->
+    <div id="content">Loading...</div>
+
+  </div>
+
+<script>
+let globalBlocks = [];
+
+// 🌙 Dark Mode
+function toggleDark() {
+  document.body.classList.toggle("bg-gray-900");
+  document.body.classList.toggle("text-white");
+}
+
+// 🔍 Search
+function filterContent() {
+  const keyword = document.getElementById("search").value.toLowerCase();
+
+  const filtered = globalBlocks.filter(b =>
+    JSON.stringify(b).toLowerCase().includes(keyword)
+  );
+
+  document.getElementById("content").innerHTML = renderBlocks(filtered);
+}
+
+// 🎨 Render
+function renderBlocks(blocks) {
+  let html = "";
+
+  blocks.forEach(block => {
+
+    if (block.type === "heading_2") {
+      block.heading_2.rich_text.forEach(t => {
+        html += `<h2 class="text-xl font-semibold mt-4">${t.plain_text}</h2>`;
+      });
+    }
+
+    if (block.type === "paragraph") {
+      block.paragraph.rich_text.forEach(t => {
+        html += `<p class="mt-2">${t.plain_text}</p>`;
+      });
+    }
+
+    if (block.children) {
+      html += renderBlocks(block.children);
+    }
+
+  });
+
+  return html;
+}
+
+// 📡 Load data
+async function loadData() {
+  const res = await fetch("/api/notion");
+  const data = await res.json();
+
+  globalBlocks = data;
+
+  document.getElementById("content").innerHTML =
+    renderBlocks(data) || "Tidak ada data";
+}
+
+loadData();
+</script>
+
+</body>
+</html>
