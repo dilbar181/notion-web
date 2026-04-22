@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -10,7 +9,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 app.use(express.static("public"));
 
-// 🔁 Ambil semua block (recursive)
+// 🔁 recursive fetch
 async function getBlocks(blockId) {
   const response = await fetch(
     `https://api.notion.com/v1/blocks/${blockId}/children`,
@@ -33,20 +32,25 @@ async function getBlocks(blockId) {
   return data.results;
 }
 
-// API endpoint
+// API
 app.get("/api/notion", async (req, res) => {
   try {
     const blocks = await getBlocks(process.env.PAGE_ID);
     res.json(blocks);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Gagal ambil data" });
   }
 });
 
+// homepage
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`🚀 http://localhost:${process.env.PORT}`);
+// ✅ FIX PORT
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server jalan di port ${PORT}`);
 });
