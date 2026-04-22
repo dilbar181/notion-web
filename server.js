@@ -35,11 +35,15 @@ async function getBlocks(blockId) {
 // API
 app.get("/api/notion", async (req, res) => {
   try {
+    console.log("TOKEN:", process.env.NOTION_TOKEN);
+    console.log("PAGE:", process.env.PAGE_ID);
+
     const blocks = await getBlocks(process.env.PAGE_ID);
+
     res.json(blocks);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Gagal ambil data" });
+    console.error("ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
